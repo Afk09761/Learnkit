@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LearnKit — Account</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#0c1410;--forest:#163324;--sage:#2d6a4f;--mint:#52b788;--mist:#cce8d8;
+  --pale:#f4f0e8;--cream:#fdf8ef;--rust:#b5451a;--sand:#e0d5c0;--snow:#ffffff;
+  --accent:#52b788;--accent-deep:#2d6a4f;--page-bg:#fdf8ef;--card-bg:#ffffff;
+  --border:#e0d5c0;--sub:#7a8a7b;
+  --r:0.875rem;--r2:1.875rem;--r3:2.5rem;--rpill:999px;
+  --shadow:0 8px 32px rgba(12,20,16,.1),0 24px 64px rgba(12,20,16,.08);
+  --bounce:cubic-bezier(0.34,1.56,0.64,1);
+}
+[data-theme="ocean"]{--accent:#38bdf8;--accent-deep:#0369a1;--page-bg:#f0f9ff;--card-bg:#fff;--border:#bae6fd;--sub:#64748b;}
+[data-theme="violet"]{--accent:#a78bfa;--accent-deep:#7c3aed;--page-bg:#faf5ff;--card-bg:#fff;--border:#e9d5ff;--sub:#7c3aed;}
+[data-theme="sunset"]{--accent:#fb923c;--accent-deep:#ea580c;--page-bg:#fff7ed;--card-bg:#fff;--border:#fed7aa;--sub:#9a3412;}
+[data-theme="rose"]{--accent:#fb7185;--accent-deep:#e11d48;--page-bg:#fff1f2;--card-bg:#fff;--border:#fecdd3;--sub:#9f1239;}
+[data-theme="amber"]{--accent:#fbbf24;--accent-deep:#d97706;--page-bg:#fffbeb;--card-bg:#fff;--border:#fde68a;--sub:#92400e;}
+[data-theme="teal"]{--accent:#2dd4bf;--accent-deep:#0f766e;--page-bg:#f0fdfa;--card-bg:#fff;--border:#99f6e4;--sub:#0f766e;}
+[data-theme="slate"]{--accent:#94a3b8;--accent-deep:#475569;--page-bg:#f8fafc;--card-bg:#fff;--border:#e2e8f0;--sub:#64748b;}
+[data-mode="dark"]{--ink:#e8ede9;--forest:#c4ddd0;--mint:#80d4aa;--mist:#1e3e2a;--pale:#111a14;--cream:#0d1510;--sand:#2a3d30;--snow:#1a2e22;--page-bg:#0d1510;--card-bg:#111a14;--border:#2a3d30;--sub:#8aaa90;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--page-bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+input,select,textarea{font-family:inherit;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:var(--mist);border-radius:4px;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;height:68px;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;background:rgba(253,248,239,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(45,106,79,.09);transition:background .3s;}
+[data-mode="dark"] nav{background:rgba(13,21,16,.92);}
+.nav-logo{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.7rem;font-weight:700;color:var(--forest);display:flex;align-items:center;gap:.3rem;}
+.nav-logo-mark{color:var(--accent);}
+.nav-logo-sup{font-size:.5rem;font-family:'DM Mono',monospace;background:var(--accent-deep);color:white;padding:.1rem .3rem;border-radius:.3rem;letter-spacing:.05em;text-transform:uppercase;align-self:flex-start;margin-top:.35rem;}
+.nav-right{display:flex;align-items:center;gap:.75rem;}
+.nav-chip{display:none;align-items:center;gap:.4rem;padding:.3rem .7rem .3rem .3rem;background:var(--mist);border-radius:var(--rpill);font-size:.8rem;font-weight:600;color:var(--sage);}
+.nav-chip.show{display:flex;}
+.nav-av{width:24px;height:24px;border-radius:50%;background:var(--sage);display:flex;align-items:center;justify-content:center;font-size:.8rem;}
+.nav-back{font-size:.78rem;font-weight:600;color:var(--sub);letter-spacing:.04em;text-transform:uppercase;transition:color .2s;}
+.nav-back:hover{color:var(--accent);}
+
+/* LOADER */
+.loader{position:fixed;inset:0;background:var(--page-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s;}
+.loader.gone{opacity:0;pointer-events:none;}
+.loader-logo{font-family:'Cormorant Garamond',Georgia,serif;font-size:2.2rem;font-weight:700;color:var(--forest);margin-bottom:1.25rem;}
+.loader-logo span{color:var(--mint);}
+.spin{width:36px;height:36px;border:3px solid var(--mist);border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes up{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+/* PAGE */
+.page{min-height:100vh;display:grid;place-items:center;padding:6rem 1.25rem 3rem;}
+
+/* AUTH */
+.auth-card{width:100%;max-width:460px;background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--r3);box-shadow:var(--shadow);overflow:hidden;animation:up .5s var(--bounce) both;}
+.auth-head{padding:2.25rem 2.25rem 0;text-align:center;}
+.auth-icon{width:52px;height:52px;background:linear-gradient(135deg,var(--accent-deep),var(--accent));border-radius:1rem;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1rem;}
+.auth-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.8rem;font-weight:700;color:var(--forest);}
+.auth-sub{font-size:.85rem;color:var(--sub);margin-top:.4rem;}
+.tab-bar{display:flex;margin:1.5rem 2.25rem 0;background:var(--pale);padding:3px;border-radius:var(--r);transition:background .3s;}
+[data-mode="dark"] .tab-bar{background:var(--mist);}
+.tab{flex:1;padding:.5rem .75rem;border-radius:calc(var(--r) - 1px);font-size:.8rem;font-weight:600;color:var(--sub);transition:all .2s;text-align:center;}
+.tab.on{background:var(--card-bg);color:var(--ink);box-shadow:0 1px 3px rgba(12,20,16,.06);}
+.auth-body{padding:1.5rem 2.25rem 2.25rem;}
+.err{background:#fff1f2;border:1.5px solid #fecdd3;color:#be123c;padding:.65rem .9rem;border-radius:var(--r);font-size:.78rem;font-weight:600;margin-bottom:.75rem;display:none;}
+.err.on{display:block;}
+[data-mode="dark"] .err{background:#2d0d18;border-color:#3d1020;color:#fda4af;}
+.btn-g{width:100%;display:flex;align-items:center;justify-content:center;gap:.7rem;padding:.8rem 1.25rem;border:1.5px solid var(--border);border-radius:var(--r);background:var(--card-bg);color:var(--ink);font-size:.88rem;font-weight:600;transition:all .2s;}
+.btn-g:hover{border-color:var(--accent);box-shadow:0 0 0 3px rgba(82,183,136,.12);transform:translateY(-1px);}
+.btn-g:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.div{display:flex;align-items:center;gap:.75rem;margin:1.1rem 0;color:var(--sub);font-size:.75rem;font-weight:500;}
+.div::before,.div::after{content:'';flex:1;height:1px;background:var(--border);}
+.field{margin-bottom:.9rem;}
+.field label{display:block;font-size:.73rem;font-weight:600;color:var(--sub);letter-spacing:.04em;text-transform:uppercase;margin-bottom:.4rem;}
+.field input{width:100%;padding:.75rem .9rem;border:1.5px solid var(--border);border-radius:var(--r);background:var(--page-bg);color:var(--ink);font-size:.88rem;transition:border-color .2s;}
+.field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(82,183,136,.1);}
+.field-2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+.pw{position:relative;}
+.pw input{padding-right:2.75rem;}
+.pw-eye{position:absolute;right:.8rem;top:50%;transform:translateY(-50%);font-size:.8rem;color:var(--sub);}
+.forgot{font-size:.73rem;color:var(--sub);font-weight:600;display:block;text-align:right;margin-top:-.3rem;margin-bottom:.7rem;}
+.btn-main{width:100%;padding:.85rem 1.25rem;background:var(--accent-deep);color:white;font-size:.92rem;font-weight:700;border-radius:var(--r);transition:all .2s;margin-top:.4rem;}
+.btn-main:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-main:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.auth-note{text-align:center;font-size:.76rem;color:var(--sub);margin-top:1.1rem;}
+.auth-note a{color:var(--accent);font-weight:600;}
+
+/* PROFILE */
+.profile{width:100%;max-width:840px;animation:up .5s var(--bounce) both;}
+.hero{background:linear-gradient(135deg,var(--accent-deep),var(--accent));border-radius:var(--r3);padding:2.25rem;display:flex;align-items:center;gap:1.75rem;margin-bottom:1.25rem;position:relative;overflow:hidden;}
+.hero-av{width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:2.2rem;border:3px solid rgba(255,255,255,.45);cursor:pointer;transition:transform .2s;flex-shrink:0;position:relative;}
+.hero-av:hover{transform:scale(1.05);}
+.av-pen{position:absolute;bottom:2px;right:2px;width:22px;height:22px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;}
+.hero-info{flex:1;color:white;}
+.hero-name{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.9rem;font-weight:700;letter-spacing:-0.02em;}
+.hero-handle{font-family:'DM Mono',monospace;font-size:.75rem;opacity:.7;margin-top:.15rem;}
+.hero-email{font-size:.72rem;opacity:.5;margin-top:.1rem;}
+.hero-badges{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.75rem;}
+.badge{padding:.22rem .65rem;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:var(--rpill);font-size:.68rem;font-weight:700;color:white;}
+.hero-btns{display:flex;flex-direction:column;gap:.45rem;}
+.hero-btn{padding:.6rem 1.25rem;border:2px solid rgba(255,255,255,.55);border-radius:var(--r);color:white;font-size:.8rem;font-weight:700;transition:all .2s;white-space:nowrap;}
+.hero-btn:hover{background:rgba(255,255,255,.2);}
+.hero-btn.solid{background:rgba(255,255,255,.22);}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;}
+.panel{background:var(--card-bg);border:1.5px solid var(--border);border-radius:var(--r2);padding:1.6rem;transition:background .3s,border-color .3s;}
+.panel.full{grid-column:1/-1;}
+.ptitle{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.05rem;font-weight:700;color:var(--forest);margin-bottom:1.1rem;display:flex;align-items:center;gap:.45rem;}
+.ef{margin-bottom:.85rem;}
+.ef label{display:block;font-size:.7rem;font-weight:700;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.3rem;}
+.ef input,.ef select,.ef textarea{width:100%;padding:.65rem .85rem;border:1.5px solid var(--border);border-radius:var(--r);background:var(--page-bg);color:var(--ink);font-size:.85rem;transition:border-color .2s;resize:none;}
+.ef input:focus,.ef select:focus,.ef textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(82,183,136,.1);}
+.ef2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
+.theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.55rem;margin-top:.45rem;}
+.sw{aspect-ratio:1;border-radius:var(--r);border:2.5px solid transparent;cursor:pointer;position:relative;transition:transform .2s,border-color .2s;overflow:hidden;}
+.sw:hover{transform:scale(1.08);}
+.sw.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(82,183,136,.2);}
+.sw.on::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:900;color:white;background:rgba(0,0,0,.25);}
+.sw-lbl{font-size:.62rem;font-weight:700;color:var(--sub);text-align:center;margin-top:.3rem;letter-spacing:.04em;text-transform:uppercase;}
+.tog-row{display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--border);}
+.tog-row:last-child{border-bottom:none;}
+.tog-lbl{font-size:.85rem;font-weight:600;color:var(--ink);}
+.tog-sub{font-size:.7rem;color:var(--sub);margin-top:.12rem;}
+.toggle{width:44px;height:24px;border-radius:var(--rpill);background:var(--border);position:relative;cursor:pointer;transition:background .25s;flex-shrink:0;}
+.toggle.on{background:var(--accent);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:transform .25s var(--bounce);}
+.toggle.on::after{transform:translateX(20px);}
+.font-list{display:flex;flex-direction:column;gap:.45rem;margin-top:.45rem;}
+.fopt{display:flex;align-items:center;gap:.7rem;padding:.65rem .85rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .2s;}
+.fopt:hover{border-color:var(--accent);}
+.fopt.on{border-color:var(--accent);background:var(--mist);}
+.fcheck{width:17px;height:17px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.58rem;transition:all .2s;}
+.fopt.on .fcheck{background:var(--accent);border-color:var(--accent);color:white;}
+.fp{font-size:.92rem;font-weight:600;}
+.fp.serif{font-family:'Cormorant Garamond',Georgia,serif;}
+.fp.sans{font-family:'DM Sans',system-ui,sans-serif;}
+.fp.mono{font-family:'DM Mono',monospace;}
+.fmeta{font-size:.68rem;color:var(--sub);}
+.chips{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.45rem;}
+.chip{padding:.35rem .85rem;border:1.5px solid var(--border);border-radius:var(--rpill);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;color:var(--ink);}
+.chip:hover{border-color:var(--accent);}
+.chip.on{background:var(--accent);border-color:var(--accent);color:white;}
+.accent-row{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:.45rem;}
+.adot{width:28px;height:28px;border-radius:50%;cursor:pointer;transition:transform .2s;border:3px solid transparent;}
+.adot:hover{transform:scale(1.15);}
+.adot.on{border-color:var(--ink);}
+.av-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.45rem;margin-top:.45rem;}
+.av-opt{aspect-ratio:1;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer;border:2px solid var(--border);background:var(--pale);transition:all .2s;}
+.av-opt:hover{border-color:var(--accent);transform:scale(1.08);}
+.av-opt.on{border-color:var(--accent);background:var(--mist);}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;}
+.stat{background:var(--pale);border-radius:var(--r);padding:.85rem;text-align:center;transition:background .3s;}
+[data-mode="dark"] .stat{background:var(--mist);}
+.stat-n{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.45rem;font-weight:700;color:var(--accent);}
+.stat-l{font-size:.65rem;color:var(--sub);margin-top:.15rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+.btn-save{padding:.7rem 1.6rem;background:var(--accent-deep);color:white;border-radius:var(--r);font-size:.85rem;font-weight:700;transition:all .2s;}
+.btn-save:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-save.done{background:var(--mint);}
+.btn-save:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.pf{display:flex;align-items:center;justify-content:space-between;margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--border);}
+.range-row{display:flex;align-items:center;gap:.7rem;}
+.range-row input[type=range]{flex:1;appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer;}
+.range-row input[type=range]::-webkit-slider-thumb{appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);}
+.rv{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--accent);min-width:2rem;text-align:center;}
+.toast{position:fixed;bottom:1.75rem;right:1.75rem;background:var(--forest);color:white;padding:.85rem 1.3rem;border-radius:1.1rem;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:.5rem;box-shadow:0 8px 32px rgba(22,51,36,.3);z-index:200;transform:translateY(70px);opacity:0;transition:all .35s var(--bounce);pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+@media(max-width:680px){
+  nav{padding:0 1rem;}
+  .hero{flex-direction:column;text-align:center;gap:.9rem;}
+  .hero-btns{flex-direction:row;justify-content:center;}
+  .grid{grid-template-columns:1fr;}
+  .panel.full{grid-column:1;}
+  .theme-grid{grid-template-columns:repeat(4,1fr);}
+  .av-grid{grid-template-columns:repeat(4,1fr);}
+  .auth-body{padding:1.25rem;}
+  .auth-head{padding:1.75rem 1.25rem 0;}
+  .tab-bar{margin:1.25rem 1.25rem 0;}
+  .field-2,.ef2{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body data-mode="light" data-theme="forest">
+
+<div class="loader" id="LD"><div class="loader-logo">Learn<span>Kit</span></div><div class="spin"></div></div>
+<div class="toast" id="toast">✓ <span id="tmsg">Saved!</span></div>
+
+<nav>
+  <a href="https://afk09761.github.io/Learnkit/" class="nav-logo">Learn<span class="nav-logo-mark" id="lmark">Kit</span><span class="nav-logo-sup">Free</span></a>
+  <div class="nav-right">
+    <div class="nav-chip" id="nchip"><div class="nav-av" id="nav-av">🎓</div><span id="nav-name">You</span></div>
+    <a href="https://afk09761.github.io/Learnkit/" class="nav-back">← Back</a>
+  </div>
+</nav>
+
+<!-- AUTH -->
+<div class="page" id="auth-view" style="display:none">
+  <div class="auth-card">
+    <div class="auth-head">
+      <div class="auth-icon">🎓</div>
+      <h1 class="auth-title">Welcome to LearnKit</h1>
+      <p class="auth-sub">Free, personalised learning — wherever you are.</p>
+      <div class="tab-bar">
+        <button class="tab on" id="tab-in" onclick="switchTab('in')">Sign In</button>
+        <button class="tab" id="tab-up" onclick="switchTab('up')">Create Account</button>
+      </div>
+    </div>
+    <!-- SIGN IN -->
+    <div class="auth-body" id="body-in">
+      <div class="err" id="err-in"></div>
+      <div class="field"><label>Email</label><input type="email" id="li-em" placeholder="you@example.com"/></div>
+      <div class="field"><label>Password</label><div class="pw"><input type="password" id="li-pw" placeholder="••••••••"/><button class="pw-eye" onclick="togglePw('li-pw',this)">👁</button></div></div>
+      <a href="#" class="forgot" onclick="doForgot();return false;">Forgot password?</a>
+      <button class="btn-main" id="li-btn" onclick="doEmailIn()">Sign In →</button>
+      <p class="auth-note">No account? <a href="#" onclick="switchTab('up');return false;">Create one free →</a></p>
+    </div>
+    <!-- SIGN UP -->
+    <div class="auth-body" id="body-up" style="display:none">
+      <div class="err" id="err-up"></div>
+      <div class="field-2">
+        <div class="field"><label>First Name</label><input type="text" id="su-fn" placeholder="Aisha"/></div>
+        <div class="field"><label>Last Name</label><input type="text" id="su-ln" placeholder="Mwangi"/></div>
+      </div>
+      <div class="field"><label>Email</label><input type="email" id="su-em" placeholder="you@example.com"/></div>
+      <div class="field"><label>Country</label><input type="text" id="su-co" placeholder="Kenya, Nigeria, Uganda…"/></div>
+      <div class="field"><label>Password</label><div class="pw"><input type="password" id="su-pw" placeholder="At least 6 characters"/><button class="pw-eye" onclick="togglePw('su-pw',this)">👁</button></div></div>
+      <button class="btn-main" id="su-btn" onclick="doEmailUp()">Create My Account →</button>
+      <p class="auth-note">Already have an account? <a href="#" onclick="switchTab('in');return false;">Sign in →</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="profile-view" style="display:none">
+<div class="profile">
+
+  <div class="hero">
+    <div style="position:relative;flex-shrink:0">
+      <div class="hero-av" id="hero-av" onclick="focusPanel('av-panel')"><span id="av-disp">🎓</span></div>
+      <div class="av-pen">✏️</div>
+    </div>
+    <div class="hero-info">
+      <div class="hero-name" id="hero-name">Your Name</div>
+      <div class="hero-handle" id="hero-handle">@username</div>
+      <div class="hero-email" id="hero-email"></div>
+      <div class="hero-badges">
+        <span class="badge" id="b-level">🌱 Explorer</span>
+        <span class="badge" id="b-school">IGCSE 2026</span>
+        <span class="badge" id="b-career">📐 Maths</span>
+      </div>
+    </div>
+    <div class="hero-btns">
+      <button class="hero-btn solid" onclick="showToast('Link copied!')">🔗 Share</button>
+      <button class="hero-btn" onclick="doSignOut()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="panel full" style="margin-bottom:1.1rem">
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="st-s">0</div><div class="stat-l">Day Streak 🔥</div></div>
+      <div class="stat"><div class="stat-n" id="st-r">0</div><div class="stat-l">Resources Used</div></div>
+      <div class="stat"><div class="stat-n" id="st-h">0h</div><div class="stat-l">Study Time</div></div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <div class="panel">
+      <div class="ptitle">👤 Personal Info</div>
+      <div class="ef2">
+        <div class="ef"><label>First Name</label><input type="text" id="p-fn" oninput="liveName()"/></div>
+        <div class="ef"><label>Last Name</label><input type="text" id="p-ln" oninput="liveName()"/></div>
+      </div>
+      <div class="ef"><label>Username</label><input type="text" id="p-un" oninput="liveHandle()"/></div>
+      <div class="ef2">
+        <div class="ef"><label>Country</label><input type="text" id="p-co" oninput="liveHandle()"/></div>
+        <div class="ef"><label>City</label><input type="text" id="p-ci" oninput="liveHandle()"/></div>
+      </div>
+      <div class="ef"><label>Bio</label><textarea id="p-bio" rows="2" placeholder="Tell us about yourself…"></textarea></div>
+      <div class="pf"><small style="color:var(--sub);font-size:.7rem">Updates shown live above</small><button class="btn-save" id="s1" onclick="save('s1')">Save</button></div>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle">🎓 Academic</div>
+      <div class="ef"><label>Level</label><select id="p-lv" onchange="liveBadge()"><option>IGCSE / O-Level</option><option>GCSE</option><option>A-Level / AS-Level</option><option>Form 3 / Form 4</option><option>Senior Secondary</option><option>University Prep</option><option>Other</option></select></div>
+      <div class="ef"><label>Exam Year</label><input type="text" id="p-yr" value="2026" oninput="liveBadge()"/></div>
+      <div class="ef"><label>School (optional)</label><input type="text" id="p-sc" placeholder="e.g. Alliance High School"/></div>
+      <div class="ef"><label>Subjects</label>
+        <div class="chips" id="chips">
+          <span class="chip on" onclick="toggleChip(this)">📐 Maths</span>
+          <span class="chip on" onclick="toggleChip(this)">🧬 Biology</span>
+          <span class="chip" onclick="toggleChip(this)">⚛️ Physics</span>
+          <span class="chip" onclick="toggleChip(this)">🧪 Chemistry</span>
+          <span class="chip" onclick="toggleChip(this)">📖 English</span>
+          <span class="chip" onclick="toggleChip(this)">🌍 Geography</span>
+          <span class="chip" onclick="toggleChip(this)">🏛️ History</span>
+          <span class="chip" onclick="toggleChip(this)">💻 Comp Sci</span>
+        </div>
+      </div>
+      <div class="ef"><label>Career</label><select id="p-ca" onchange="liveBadge()"><option>⚕️ Medicine</option><option>💻 Software Engineering</option><option>⚖️ Law</option><option>🏗️ Civil Engineering</option><option>📊 Data Science</option><option>🏛️ Architecture</option><option>📈 Accounting</option><option>👩‍🏫 Teaching</option><option>🎨 Graphic Design</option><option>Not sure yet</option></select></div>
+      <div class="pf"><span></span><button class="btn-save" id="s2" onclick="save('s2')">Save</button></div>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle">🎨 Theme &amp; Colour</div>
+      <div class="ef"><label>Theme</label><div class="theme-grid" id="tgrid"></div></div>
+      <div class="ef" style="margin-top:.9rem"><label>Accent</label><div class="accent-row" id="adots"></div></div>
+      <div class="ef" style="margin-top:.9rem"><label>Mode</label>
+        <div class="tog-row"><div><div class="tog-lbl">Dark Mode</div><div class="tog-sub">Easy on the eyes</div></div><div class="toggle" id="sw-dark" onclick="toggleDark()"></div></div>
+        <div class="tog-row"><div><div class="tog-lbl">High Contrast</div><div class="tog-sub">Stronger contrast</div></div><div class="toggle" id="sw-hc" onclick="togSw('sw-hc','Contrast updated')"></div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle">🔤 Typography</div>
+      <div class="ef"><label>Font</label>
+        <div class="font-list">
+          <div class="fopt on" onclick="pickFont(this,'serif')"><div class="fcheck">✓</div><div><div class="fp serif">Cormorant Garamond</div><div class="fmeta">Elegant serif — default</div></div></div>
+          <div class="fopt" onclick="pickFont(this,'sans')"><div class="fcheck"></div><div><div class="fp sans">DM Sans</div><div class="fmeta">Clean modern sans</div></div></div>
+          <div class="fopt" onclick="pickFont(this,'mono')"><div class="fcheck"></div><div><div class="fp mono">DM Mono</div><div class="fmeta">Technical monospace</div></div></div>
+        </div>
+      </div>
+      <div class="ef" style="margin-top:.85rem"><label>Font Size</label>
+        <div class="range-row"><span style="font-size:.72rem;color:var(--sub)">A</span><input type="range" min="14" max="20" value="16" id="r-fs" oninput="updFS(this)"/><span style="font-size:1rem;color:var(--sub)">A</span><span class="rv" id="rv-fs">16</span></div>
+      </div>
+      <div class="ef" style="margin-top:.7rem"><label>Line Spacing</label>
+        <div class="range-row"><span style="font-size:.72rem;color:var(--sub)">≡</span><input type="range" min="1" max="2" step="0.1" value="1.6" id="r-lh" oninput="updLH(this)"/><span style="color:var(--sub)">≡≡</span><span class="rv" id="rv-lh">1.6</span></div>
+      </div>
+    </div>
+
+    <div class="panel" id="av-panel">
+      <div class="ptitle">🖼️ Avatar &amp; Identity</div>
+      <div class="ef"><label>Avatar</label><div class="av-grid" id="av-grid"></div></div>
+      <div class="ef" style="margin-top:.85rem"><label>Pronouns</label><select id="p-pr"><option value="">Prefer not to say</option><option>she/her</option><option>he/him</option><option>they/them</option><option>she/they</option><option>he/they</option></select></div>
+      <div class="ef"><label>Language</label><select id="p-la"><option>English</option><option>Swahili</option><option>French</option><option>Hausa</option><option>Amharic</option><option>Zulu</option><option>Yoruba</option><option>Igbo</option><option>Portuguese</option><option>Arabic</option></select></div>
+      <div class="pf"><span></span><button class="btn-save" id="s3" onclick="save('s3')">Save</button></div>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle">🔔 Notifications</div>
+      <div class="tog-row"><div><div class="tog-lbl">Weekly Digest</div><div class="tog-sub">Tips &amp; new resources</div></div><div class="toggle on" id="sw-d" onclick="togSw('sw-d','Digest toggled')"></div></div>
+      <div class="tog-row"><div><div class="tog-lbl">Study Reminders</div><div class="tog-sub">Keep your streak alive</div></div><div class="toggle on" id="sw-r" onclick="togSw('sw-r','Reminders toggled')"></div></div>
+      <div class="tog-row"><div><div class="tog-lbl">Scholarship Alerts</div><div class="tog-sub">New matching scholarships</div></div><div class="toggle" id="sw-sc" onclick="togSw('sw-sc','Alerts toggled')"></div></div>
+      <div class="tog-row"><div><div class="tog-lbl">Public Profile</div><div class="tog-sub">Let students find you</div></div><div class="toggle" id="sw-pub" onclick="togSw('sw-pub','Visibility updated')"></div></div>
+      <div class="tog-row"><div><div class="tog-lbl">Show Study Stats</div><div class="tog-sub">Display streak publicly</div></div><div class="toggle on" id="sw-st" onclick="togSw('sw-st','Stats visibility updated')"></div></div>
+    </div>
+
+    <div class="panel full">
+      <div class="ptitle">📅 Study Preferences</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.9rem">
+        <div class="ef"><label>Session Length</label><select id="pf-s"><option>15 min</option><option selected>25 min (Pomodoro)</option><option>45 min</option><option>60 min</option><option>90 min</option></select></div>
+        <div class="ef"><label>Best Study Time</label><select id="pf-t"><option>Early Morning</option><option>Morning</option><option selected>Afternoon</option><option>Evening</option><option>Night</option></select></div>
+        <div class="ef"><label>Weekly Goal</label><select id="pf-g"><option>3 hrs/wk</option><option selected>7 hrs/wk</option><option>14 hrs/wk</option><option>21 hrs/wk</option><option>28+ hrs/wk</option></select></div>
+      </div>
+      <div class="pf"><small style="color:var(--sub);font-size:.7rem">Customises your experience</small><button class="btn-save" id="s4" onclick="save('s4')">Save</button></div>
+    </div>
+
+    <div class="panel full" style="border-color:rgba(181,69,26,.2)">
+      <div class="ptitle" style="color:var(--rust)">⚠️ Account</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.9rem">
+        <div><div style="font-size:.875rem;font-weight:600">Download My Data</div><div style="font-size:.73rem;color:var(--sub);margin-top:.15rem">Export all profile &amp; progress</div></div>
+        <button class="btn-save" style="background:var(--sand);color:var(--ink)" onclick="showToast('Export coming soon!')">Export</button>
+      </div>
+      <div style="height:1px;background:rgba(181,69,26,.15);margin:.9rem 0"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.9rem">
+        <div><div style="font-size:.875rem;font-weight:600;color:var(--rust)">Delete Account</div><div style="font-size:.73rem;color:var(--sub);margin-top:.15rem">Permanently removes all data</div></div>
+        <button class="btn-save" style="background:var(--rust)" onclick="showToast('Contact support to confirm.')">Delete</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getAuth,onAuthStateChanged,getRedirectResult,signInWithRedirect,signInWithEmailAndPassword,createUserWithEmailAndPassword,GoogleAuthProvider,signOut,sendPasswordResetEmail}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import{getFirestore,doc,getDoc,setDoc,updateDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const FB=initializeApp({apiKey:"AIzaSyD-8tFIyXguO2cRoZniYldAfDeqAuqAGds",authDomain:"learnkit-77f46.firebaseapp.com",projectId:"learnkit-77f46",storageBucket:"learnkit-77f46.firebasestorage.app",messagingSenderId:"999782484463",appId:"1:999782484463:web:4cc2fa902df87e64dd4e1a"});
+const auth=getAuth(FB),db=getFirestore(FB),GP=new GoogleAuthProvider();
+
+const THEMES=[{id:'forest',l:'Forest',c:['#163324','#40916c','#52b788']},{id:'ocean',l:'Ocean',c:['#0369a1','#0ea5e9','#38bdf8']},{id:'violet',l:'Violet',c:['#7c3aed','#a78bfa','#c4b5fd']},{id:'sunset',l:'Sunset',c:['#ea580c','#fb923c','#fdba74']},{id:'rose',l:'Rose',c:['#e11d48','#fb7185','#fda4af']},{id:'amber',l:'Amber',c:['#d97706','#fbbf24','#fde68a']},{id:'teal',l:'Teal',c:['#0f766e','#14b8a6','#5eead4']},{id:'slate',l:'Slate',c:['#334155','#64748b','#94a3b8']}];
+const ACCENTS=[{v:'#52b788',d:'#2d6a4f'},{v:'#38bdf8',d:'#0369a1'},{v:'#a78bfa',d:'#7c3aed'},{v:'#fb923c',d:'#ea580c'},{v:'#fb7185',d:'#e11d48'},{v:'#fbbf24',d:'#d97706'},{v:'#2dd4bf',d:'#0f766e'},{v:'#94a3b8',d:'#475569'}];
+const AVS=['🎓','🌍','📚','⭐','🔭','🧬','💻','⚡','🌱','📐','🏆','🎯','🦁','🦋','🌺','🔬','🎨','✈️','🏔️','🌊','🦅','🧠'];
+
+let CU=null,UP={},CT='forest',CA={v:'#52b788',d:'#2d6a4f'},CAV='🎓',DM=false;
+
+// Handle Google redirect result
+getRedirectResult(auth).catch(e=>console.error('Redirect error:',e));
+
+onAuthStateChanged(auth,async u=>{
+  document.getElementById('LD').classList.add('gone');
+  if(u){CU=u;await loadProfile(u);showProfile(u);}
+  else showAuth();
+});
+
+async function loadProfile(u){
+  try{
+    const r=doc(db,'users',u.uid),s=await getDoc(r);
+    if(s.exists()){UP=s.data();}
+    else{
+      const fn=u.displayName?u.displayName.split(' ')[0]:'';
+      const ln=u.displayName?u.displayName.split(' ').slice(1).join(' '):'';
+      UP={firstName:fn,lastName:ln,handle:'',country:'',city:'',bio:'',email:u.email||'',avatar:'🎓',theme:'forest',accent:{v:'#52b788',d:'#2d6a4f'},darkMode:false,level:'IGCSE / O-Level',examYear:'2026',school:'',career:'⚕️ Medicine',subjects:['📐 Maths','🧬 Biology'],pronoun:'',language:'English',streak:0,resourcesUsed:0,studyHours:0,sessionLength:'25 min (Pomodoro)',studyTime:'Afternoon',weeklyGoal:'7 hrs/wk',notifications:{digest:true,reminders:true,scholarships:false,publicProfile:false,showStats:true},createdAt:serverTimestamp()};
+      await setDoc(r,UP);
+    }
+  }catch(e){console.error(e);}
+}
+
+async function saveFS(){
+  if(!CU)return;
+  try{
+    const d=gatherData();
+    await updateDoc(doc(db,'users',CU.uid),{...d,updatedAt:serverTimestamp()});
+  }catch(e){console.error(e);}
+}
+
+function gatherData(){
+  const g=id=>{const el=document.getElementById(id);return el?el.value:'';};
+  return{firstName:g('p-fn'),lastName:g('p-ln'),handle:g('p-un'),country:g('p-co'),city:g('p-ci'),bio:g('p-bio'),level:g('p-lv'),examYear:g('p-yr'),school:g('p-sc'),career:g('p-ca'),pronoun:g('p-pr'),language:g('p-la'),sessionLength:g('pf-s'),studyTime:g('pf-t'),weeklyGoal:g('pf-g'),avatar:CAV,theme:CT,accent:CA,darkMode:DM,subjects:[...document.querySelectorAll('.chip.on')].map(c=>c.textContent),notifications:{digest:isSw('sw-d'),reminders:isSw('sw-r'),scholarships:isSw('sw-sc'),publicProfile:isSw('sw-pub'),showStats:isSw('sw-st')}};
+}
+function isSw(id){return document.getElementById(id).classList.contains('on');}
+
+function showProfile(u){
+  document.getElementById('auth-view').style.display='none';
+  document.getElementById('profile-view').style.display='';
+  document.getElementById('nchip').classList.add('show');
+  document.getElementById('nav-name').textContent=UP.firstName||u.displayName||'You';
+  document.getElementById('nav-av').textContent=UP.avatar||'🎓';
+  if(UP.theme){CT=UP.theme;document.body.setAttribute('data-theme',CT);}
+  if(UP.accent){CA=UP.accent;applyAccent(CA);}
+  if(UP.darkMode){DM=true;document.body.setAttribute('data-mode','dark');document.getElementById('sw-dark').classList.add('on');}
+  if(UP.avatar)CAV=UP.avatar;
+  const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
+  sv('p-fn',UP.firstName);sv('p-ln',UP.lastName);sv('p-un',UP.handle);sv('p-co',UP.country);sv('p-ci',UP.city);sv('p-bio',UP.bio);sv('p-lv',UP.level);sv('p-yr',UP.examYear);sv('p-sc',UP.school);sv('p-ca',UP.career);sv('p-pr',UP.pronoun);sv('p-la',UP.language);sv('pf-s',UP.sessionLength);sv('pf-t',UP.studyTime);sv('pf-g',UP.weeklyGoal);
+  if(UP.subjects)document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',UP.subjects.includes(c.textContent)));
+  if(UP.notifications){const n=UP.notifications;setSw('sw-d',n.digest);setSw('sw-r',n.reminders);setSw('sw-sc',n.scholarships);setSw('sw-pub',n.publicProfile);setSw('sw-st',n.showStats);}
+  document.getElementById('st-s').textContent=UP.streak||0;
+  document.getElementById('st-r').textContent=UP.resourcesUsed||0;
+  document.getElementById('st-h').textContent=(UP.studyHours||0)+'h';
+  document.getElementById('hero-email').textContent=u.email||'';
+  document.getElementById('av-disp').textContent=CAV;
+  buildTheme();buildAccent();buildAv();
+  liveName();liveHandle();liveBadge();
+}
+
+function setSw(id,on){const el=document.getElementById(id);if(el)el.classList.toggle('on',!!on);}
+
+function showAuth(){
+  document.getElementById('profile-view').style.display='none';
+  document.getElementById('auth-view').style.display='';
+  document.getElementById('nchip').classList.remove('show');
+}
+
+function applyAccent(a){
+  document.documentElement.style.setProperty('--accent',a.v);
+  document.documentElement.style.setProperty('--accent-deep',a.d);
+  document.getElementById('lmark').style.color=a.v;
+}
+
+function buildTheme(){
+  document.getElementById('tgrid').innerHTML=THEMES.map(t=>`<div><div class="sw ${t.id===CT?'on':''}" style="background:linear-gradient(135deg,${t.c[0]},${t.c[1]},${t.c[2]})" onclick="setTheme('${t.id}',this)"></div><div class="sw-lbl">${t.l}</div></div>`).join('');
+}
+function buildAccent(){
+  document.getElementById('adots').innerHTML=ACCENTS.map(a=>`<div class="adot ${a.v===CA.v?'on':''}" style="background:${a.v}" onclick="setAccent('${a.v}','${a.d}',this)"></div>`).join('');
+}
+function buildAv(){
+  document.getElementById('av-grid').innerHTML=AVS.map(av=>`<div class="av-opt ${av===CAV?'on':''}" onclick="setAv('${av}',this)">${av}</div>`).join('');
+}
+
+window.doGoogle=async()=>{
+  disableAll(true);
+  try{await signInWithRedirect(auth,GP);}
+  catch(e){showErr(e.message);disableAll(false);}
+};
+window.doEmailIn=async()=>{
+  const e=document.getElementById('li-em').value,p=document.getElementById('li-pw').value;
+  if(!e||!p){showErr('Please fill in both fields.');return;}
+  disableAll(true);
+  try{await signInWithEmailAndPassword(auth,e,p);}
+  catch(er){showErr(er.code==='auth/invalid-credential'?'Wrong email or password.':er.message);disableAll(false);}
+};
+window.doEmailUp=async()=>{
+  const f=document.getElementById('su-fn').value,e=document.getElementById('su-em').value,p=document.getElementById('su-pw').value;
+  if(!f||!e||!p){showErr('Please fill in all fields.','up');return;}
+  if(p.length<6){showErr('Password needs 6+ characters.','up');return;}
+  disableAll(true);
+  try{
+    const c=await createUserWithEmailAndPassword(auth,e,p);
+    await setDoc(doc(db,'users',c.user.uid),{firstName:f,lastName:document.getElementById('su-ln').value,country:document.getElementById('su-co').value,email:e,avatar:'🎓',theme:'forest',accent:{v:'#52b788',d:'#2d6a4f'},darkMode:false,level:'IGCSE / O-Level',examYear:'2026',career:'⚕️ Medicine',subjects:['📐 Maths','🧬 Biology'],language:'English',streak:0,resourcesUsed:0,studyHours:0,notifications:{digest:true,reminders:true,scholarships:false,publicProfile:false,showStats:true},createdAt:serverTimestamp()});
+  }catch(er){showErr(er.code==='auth/email-already-in-use'?'Email already has an account.':er.message,'up');disableAll(false);}
+};
+window.doForgot=async()=>{
+  const e=document.getElementById('li-em').value;
+  if(!e){showErr('Enter your email first.');return;}
+  try{await sendPasswordResetEmail(auth,e);showToast('Reset email sent!');}
+  catch(er){showErr(er.message);}
+};
+window.doSignOut=async()=>{await signOut(auth);showToast('Signed out. See you soon! 👋');};
+
+window.save=async(id)=>{
+  const btn=document.getElementById(id);
+  btn.disabled=true;btn.textContent='Saving…';
+  await saveFS();
+  btn.classList.add('done');btn.textContent='✓ Saved';btn.disabled=false;
+  setTimeout(()=>{btn.classList.remove('done');btn.textContent='Save';},2200);
+  showToast('Saved to your account!');
+};
+
+window.setTheme=(id,el)=>{CT=id;document.body.setAttribute('data-theme',id);document.querySelectorAll('.sw').forEach(s=>s.classList.remove('on'));el.classList.add('on');autoSave();showToast('Theme updated!');};
+window.setAccent=(v,d,el)=>{CA={v,d};applyAccent(CA);document.querySelectorAll('.adot').forEach(a=>a.classList.remove('on'));el.classList.add('on');autoSave();};
+window.toggleDark=()=>{DM=!DM;document.getElementById('sw-dark').classList.toggle('on',DM);document.body.setAttribute('data-mode',DM?'dark':'light');autoSave();showToast(DM?'Dark mode on 🌙':'Light mode on ☀️');};
+window.togSw=(id,msg)=>{document.getElementById(id).classList.toggle('on');showToast(msg);};
+window.pickFont=(el,f)=>{document.querySelectorAll('.fopt').forEach(o=>{o.classList.remove('on');o.querySelector('.fcheck').textContent='';});el.classList.add('on');el.querySelector('.fcheck').textContent='✓';const m={serif:"'Cormorant Garamond',Georgia,serif",sans:"'DM Sans',system-ui,sans-serif",mono:"'DM Mono',monospace"};document.documentElement.style.setProperty('--font-display',m[f]);showToast('Font updated!');};
+window.updFS=i=>{document.getElementById('rv-fs').textContent=i.value;document.documentElement.style.fontSize=i.value+'px';};
+window.updLH=i=>{document.getElementById('rv-lh').textContent=parseFloat(i.value).toFixed(1);document.body.style.lineHeight=i.value;};
+window.setAv=(av,el)=>{CAV=av;document.getElementById('av-disp').textContent=av;document.getElementById('nav-av').textContent=av;document.querySelectorAll('.av-opt').forEach(a=>a.classList.remove('on'));el.classList.add('on');autoSave();showToast('Avatar updated!');};
+window.liveName=()=>{const f=gv('p-fn'),l=gv('p-ln');document.getElementById('hero-name').textContent=(f+' '+l).trim()||'Your Name';document.getElementById('nav-name').textContent=f||'You';};
+window.liveHandle=()=>{const h=gv('p-un'),c=gv('p-ci'),k=gv('p-co');document.getElementById('hero-handle').textContent=(h?'@'+h:'')+(c||k?' · '+[c,k].filter(Boolean).join(', '):'');};
+window.liveBadge=()=>{document.getElementById('b-school').textContent=gv('p-lv')+(gv('p-yr')?' '+gv('p-yr'):'');document.getElementById('b-career').textContent=gv('p-ca');};
+window.toggleChip=el=>{el.classList.toggle('on');const a=[...document.querySelectorAll('.chip.on')];if(a.length)document.getElementById('b-career').textContent=a[0].textContent+(a.length>1?' +'+(a.length-1):'');};
+window.switchTab=t=>{document.getElementById('body-in').style.display=t==='in'?'block':'none';document.getElementById('body-up').style.display=t==='up'?'block':'none';document.getElementById('tab-in').classList.toggle('on',t==='in');document.getElementById('tab-up').classList.toggle('on',t==='up');document.getElementById('err-in').classList.remove('on');document.getElementById('err-up').classList.remove('on');};
+window.togglePw=(id,btn)=>{const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';};
+window.focusPanel=id=>{const el=document.getElementById(id);if(!el)return;el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--accent)';setTimeout(()=>el.style.outline='',1800);};
+
+function gv(id){const el=document.getElementById(id);return el?el.value:'';}
+function showErr(msg,f='in'){const el=document.getElementById('err-'+f);if(el){el.textContent=msg;el.classList.add('on');}}
+function disableAll(d){['gin','gup','li-btn','su-btn'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=d;});}
+let tT;
+window.showToast=msg=>{document.getElementById('tmsg').textContent=msg;document.getElementById('toast').classList.add('show');clearTimeout(tT);tT=setTimeout(()=>document.getElementById('toast').classList.remove('show'),2800);};
+let asT;
+function autoSave(){clearTimeout(asT);asT=setTimeout(()=>{if(CU)saveFS();},1500);}
+</script>
+</body>
+</html>
